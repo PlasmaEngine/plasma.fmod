@@ -1,0 +1,230 @@
+#include <EditorPluginFmod/EditorPluginFmodPCH.h>
+
+#include <EditorPluginFmod/Dialogs/FmodProjectSettingsDlg.moc.h>
+#include <QFileDialog>
+#include <QInputDialog>
+
+plQtFmodProjectSettingsDlg::plQtFmodProjectSettingsDlg(QWidget* pParent)
+  : QDialog(pParent)
+{
+  setupUi(this);
+
+  Load();
+
+  for (auto it = m_Configs.m_AssetProfiles.GetIterator(); it.IsValid(); ++it)
+  {
+    ListPlatforms->addItem(it.Key().GetData());
+  }
+
+  if (!m_Configs.m_AssetProfiles.IsEmpty())
+  {
+    if (m_Configs.m_AssetProfiles.Contains("Desktop"))
+      SetCurrentPlatform("Desktop");
+    else
+      SetCurrentPlatform(m_Configs.m_AssetProfiles.GetIterator().Key());
+  }
+  else
+  {
+    SetCurrentPlatform("");
+  }
+}
+plResult plQtFmodProjectSettingsDlg::Save()
+{
+  if (m_Configs.Save().Failed())
+  {
+    plStringBuilder sError;
+    sError.SetFormat("Failed to save the FMOD configuration file\n'{0}'", plFmodAssetProfiles::s_sConfigFile);
+
+    plQtUiServices::GetSingleton()->MessageBoxWarning(sError);
+
+    return PL_FAILURE;
+  }
+
+  return PL_SUCCESS;
+}
+
+void plQtFmodProjectSettingsDlg::Load()
+{
+  m_Configs.Load().IgnoreResult();
+
+  m_ConfigsOld = m_Configs;
+}
+
+void plQtFmodProjectSettingsDlg::SetCurrentPlatform(const char* szPlatform)
+{
+  StoreCurrentPlatform();
+
+  m_sCurrentPlatform = szPlatform;
+
+  {
+    const bool enable = !m_sCurrentPlatform.IsEmpty();
+    EditMasterBank->setEnabled(enable);
+    ButtonMB->setEnabled(enable);
+    ComboMode->setEnabled(enable);
+    SpinChannels->setEnabled(enable);
+    SpinSamplerRate->setEnabled(enable);
+    ButtonRemove->setEnabled(enable);
+  }
+
+  plQtScopedBlockSignals bs(ListPlatforms);
+  QList<QListWidgetItem*> items = ListPlatforms->findItems(szPlatform, Qt::MatchFlag::MatchExactly);
+
+  ListPlatforms->clearSelection();
+
+  if (items.size() > 0)
+  {
+    items[0]->setSelected(true);
+  }
+
+  m_sCurrentPlatform = szPlatform;
+
+  if (m_sCurrentPlatform.IsEmpty())
+    return;
+
+  const auto& cfg = m_Configs.m_AssetProfiles[m_sCurrentPlatform];
+
+  EditMasterBank->setText(cfg.m_sMasterSoundBank.GetData());
+  SpinChannels->setValue(cfg.m_uiVirtualChannels);
+  SpinSamplerRate->setValue(cfg.m_uiSamplerRate);
+
+  switch (cfg.m_SpeakerMode)
+  {
+    case plFmodSpeakerMode::ModeStereo:
+      ComboMode->setCurrentIndex(0);
+      break;
+    case plFmodSpeakerMode::Mode7Point1:
+      ComboMode->setCurrentIndex(2);
+    case plFmodSpeakerMode::Mode5Point1:
+    default:
+      ComboMode->setCurrentIndex(1);
+      break;
+  }
+}
+
+void plQtFmodProjectSettingsDlg::StoreCurrentPlatform()
+{
+  if (!m_Configs.m_AssetProfiles.Contains(m_sCurrentPlatform))
+    return;
+
+  auto& cfg = m_Configs.m_AssetProfiles[m_sCurrentPlatform];
+
+  cfg.m_sMasterSoundBank = EditMasterBank->text().toUtf8().data();
+  cfg.m_uiVirtualChannels = SpinChannels->value();
+  cfg.m_uiSamplerRate = SpinSamplerRate->value();
+
+  if (cfg.m_uiSamplerRate < 8000)
+    cfg.m_uiSamplerRate = 0;
+
+  switch (ComboMode->currentIndex())
+  {
+    case 0:
+      cfg.m_SpeakerMode = plFmodSpeakerMode::ModeStereo;
+      break;
+    case 1:
+      cfg.m_SpeakerMode = plFmodSpeakerMode::Mode5Point1;
+      break;
+    case 2:
+      cfg.m_SpeakerMode = plFmodSpeakerMode::Mode7Point1;
+      break;
+  }
+}
+
+void plQtFmodProjectSettingsDlg::on_ButtonBox_clicked(QAbstractButton* pButton)
+{
+  if (pButton == ButtonBox->button(QDialogButtonBox::Ok))
+  {
+    StoreCurrentPlatform();
+
+    if (m_ConfigsOld.m_AssetProfiles != m_Configs.m_AssetProfiles)
+    {
+      if (plQtUiServices::GetSingleton()->MessageBoxQuestion("Save the changes to the FMOD configuration?\nYou need to reload the project for the changes to take effect.", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+      {
+        plQtEditorApp::GetSingleton()->AddReloadProjectRequiredReason("FMOD configuration was modified.");
+
+        if (Save().Failed())
+          return;
+      }
+    }
+
+    accept();
+    return;
+  }
+
+  if (pButton == ButtonBox->button(QDialogButtonBox::Cancel))
+  {
+    reject();
+    return;
+  }
+}
+
+void plQtFmodProjectSettingsDlg::on_ListPlatforms_itemSelectionChanged()
+{
+  if (ListPlatforms->selectedItems().isEmpty())
+  {
+    SetCurrentPlatform("");
+    return;
+  }
+
+  ButtonRemove->setEnabled(true);
+  int row = ListPlatforms->selectionModel()->selectedIndexes()[0].row();
+  SetCurrentPlatform(ListPlatforms->item(row)->text().toUtf8().data());
+}
+
+void plQtFmodProjectSettingsDlg::on_ButtonAdd_clicked()
+{
+  QString name = QInputDialog::getText(this, "Add Platform", "Platform Name:");
+
+  if (name.isEmpty())
+    return;
+
+  const plString sName = name.toUtf8().data();
+
+  if (!m_Configs.m_AssetProfiles.Contains(sName))
+  {
+    // add a new item with default values
+    m_Configs.m_AssetProfiles[sName];
+
+    ListPlatforms->addItem(sName.GetData());
+  }
+
+  SetCurrentPlatform(sName);
+}
+
+void plQtFmodProjectSettingsDlg::on_ButtonRemove_clicked()
+{
+  if (ListPlatforms->selectedItems().isEmpty())
+    return;
+
+  int row = ListPlatforms->selectionModel()->selectedIndexes()[0].row();
+  const plString sPlatform = ListPlatforms->item(row)->text().toUtf8().data();
+
+  m_Configs.m_AssetProfiles.Remove(sPlatform);
+  delete ListPlatforms->item(row);
+}
+
+void plQtFmodProjectSettingsDlg::on_ButtonMB_clicked()
+{
+  static QString sLastPath = plToolsProject::GetSingleton()->GetProjectDirectory().GetData();
+  const QString sFile = QFileDialog::getOpenFileName(this, QLatin1String("Select Master Sound Bank"), sLastPath, "Sound Banks (*.bank)", nullptr, QFileDialog::Option::DontResolveSymlinks);
+
+  if (sFile.isEmpty())
+    return;
+
+  plStringBuilder sRelative = sFile.toUtf8().data();
+
+  if (!plQtEditorApp::GetSingleton()->MakePathDataDirectoryRelative(sRelative))
+  {
+    plQtUiServices::GetSingleton()->MessageBoxWarning("<html>The selected sound bank is not in a data directory of the project.<br><br>Either choose another sound bank or add the necessary folder as a <a href='https://plengine.net/pages/docs/projects/data-directories.html'>data directory</a> to the project.</html>");
+    return;
+  }
+
+  sLastPath = sFile;
+
+  if (sRelative.EndsWith_NoCase(".strings.bank"))
+  {
+    plQtUiServices::GetSingleton()->MessageBoxWarning("The strings sound bank cannot be selected as the master sound bank.");
+    return;
+  }
+
+  EditMasterBank->setText(sRelative.GetData());
+}

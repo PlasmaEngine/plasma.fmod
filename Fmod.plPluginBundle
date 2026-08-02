@@ -1,0 +1,23 @@
+// for a description of the options see:
+// https://plengine.net/pages/docs/editor/editor-plugins.html
+
+PluginInfo
+{
+	string %DisplayName{"FMOD Studio"}
+	string %Category{"Audio"}
+	string %MinEngineVersion{"0.7.0"}
+	string %MaxEngineVersion{"0.7.0"}
+	string %Icon{"FmodIcon.png"}
+	string %Banner{"FmodBanner.png"}
+	string %Description{"Sound and music via FMOD Studio. Requires an FMOD installation - this plugin ships no FMOD binaries. See the package description for details."}
+	string %EditorPlugins{"plEditorPluginFmod"}
+	string %EditorEnginePlugins{}
+	string %RuntimePlugins{"plFmodPlugin"}
+	// Empty by design: fmod.dll and fmodstudio.dll come from the user's own FMOD
+	// install, so they must not be packed into this plugin's runtime component.
+	string %PackageDependencies{}
+	string %RequiredPlugins{}
+	string %ExclusiveFeatures{"Sound"}
+	string %EnabledInTemplates{}
+	string %PlasmaBuildTargetName{"FmodPlugin"}
+}

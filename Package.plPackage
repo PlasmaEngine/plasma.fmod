@@ -1,0 +1,62 @@
+// plasma.fmod — FMOD Studio audio.
+//
+// The AUTHORED manifest, kept in source next to the plugin. It declares identity, compatibility,
+// what to load and what to ship. Component hashes and sizes are NOT here: the packaging step
+// computes those and emits them into the published manifest that ships inside the .plpkg.
+//
+// Field reference and validation rules: Docs/PluginPackageManagerPlan.html §05.
+
+PackageInfo
+{
+	// ---- identity -------------------------------------------------------------
+	// Version starts at 1.0.0 rather than inheriting an engine version: this package
+	// versions on its own changes from now on, not on the engine's.
+	string %Id{"plasma.fmod"}
+	string %Version{"1.0.0"}
+	string %Publisher{"PlasmaTechnology"}
+	string %License{"MIT"}
+	string %Homepage{"https://plasmagameengine.com"}
+
+	// ---- compatibility --------------------------------------------------------
+	// Must equal plSdkVersion::GetAbiTag() of the engine these binaries were built
+	// against. The build configuration is part of it - a Development and a Shipping
+	// build do not share a binary interface.
+	string %MinEngineVersion{"0.7.0"}
+	string %MaxEngineVersion{"0.7.0"}
+	string %AbiTag{"win64-msvc19-0.7.0-dev"}
+
+	// ---- presentation ---------------------------------------------------------
+	// The SDK requirement leads the description. This package cannot load without an
+	// FMOD installation, and a user who learns that from a DLL load failure has
+	// already wasted their time.
+	string %DisplayName{"FMOD Studio"}
+	string %Category{"Audio"}
+	string %Description{"Sound and music via FMOD Studio, with editor support for sound banks and sound events.
+
+Requires FMOD to be installed separately. FMOD is licensed middleware, so this package ships only Plasma's own plugin binaries - not FMOD itself. Download the FMOD Studio API for Windows from fmod.com, then place fmod.dll and fmodstudio.dll next to the editor executable (or anywhere on the library search path). Without them this plugin will fail to load.
+
+Building against a different FMOD version is supported: set FMOD_SDK_PATH to your API directory."}
+	string %Icon{"Branding/FmodIcon.png"}
+	string %Banner{"Branding/FmodBanner.png"}
+
+	// ---- binaries -------------------------------------------------------------
+	// PackageDependencies is deliberately empty. In a bundle it names the extra DLLs
+	// that ship alongside the plugin, and it is what the packaging step reads to
+	// decide what lands in runtime-win64. Listing fmod.dll here would redistribute
+	// FMOD through a public registry, which is exactly what this package avoids.
+	string %EditorPlugins{"plEditorPluginFmod"}
+	string %EditorEnginePlugins{}
+	string %RuntimePlugins{"plFmodPlugin"}
+	string %PackageDependencies{}
+
+	// ---- dependencies ---------------------------------------------------------
+	// None resolvable through the registry. The FMOD runtime is an external
+	// prerequisite, stated in the description, not a package that can be installed.
+
+	// ---- components -----------------------------------------------------------
+	Component { string %Name{"manifest"} string %Platform{"any"} }
+	Component { string %Name{"runtime-win64"} string %Platform{"win64"} }
+	Component { string %Name{"editor-win64"} string %Platform{"win64"} }
+	Component { string %Name{"icon"} string %Platform{"any"} }
+	Component { string %Name{"banner"} string %Platform{"any"} }
+}
