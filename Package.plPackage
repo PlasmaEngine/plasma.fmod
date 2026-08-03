@@ -12,7 +12,7 @@ PackageInfo
 	// Version starts at 1.0.0 rather than inheriting an engine version: this package
 	// versions on its own changes from now on, not on the engine's.
 	string %Id{"plasma.fmod"}
-	string %Version{"1.1.0"}
+	string %Version{"1.1.1"}
 	string %Publisher{"PlasmaTechnology"}
 	string %License{"MIT"}
 	string %Homepage{"https://plasmagameengine.com"}
@@ -53,7 +53,14 @@ Building against a different FMOD version is supported: set FMOD_SDK_PATH to you
 	// None resolvable through the registry. The FMOD runtime is an external
 	// prerequisite, stated in the description, not a package that can be installed.
 
+	// ---- assets ---------------------------------------------------------------
+	// Mounted as a data directory when the package is installed. The layout below Assets/
+	// mirrors where this content sat inside the engine, so every shader include, shape icon
+	// lookup and asset reference resolves exactly as it did before.
+	Mount { string %Path{"Assets"} string %RootName{"plasma.fmod"} bool %Writable{false} }
+
 	// ---- components -----------------------------------------------------------
+	Component { string %Name{"assets"} string %Platform{"any"} }
 	Component { string %Name{"manifest"} string %Platform{"any"} }
 	Component { string %Name{"runtime-win64"} string %Platform{"win64"} }
 	Component { string %Name{"editor-win64"} string %Platform{"win64"} }
