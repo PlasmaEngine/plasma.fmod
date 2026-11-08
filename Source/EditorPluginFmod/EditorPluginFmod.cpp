@@ -16,12 +16,38 @@
 #include <Foundation/Utilities/ConversionUtils.h>
 
 #include <EditorPluginFmod/Actions/FmodActions.h>
+#include <EditorPluginFmod/EngineUi/FmodShellPanels.h>
 #include <EditorPluginFmod/Preferences/FmodPreferences.h>
+#include <EditorUi/Widgets.h>
+#include <Foundation/Configuration/Plugin.h>
 
 static void ToolsProjectEventHandler(const plToolsProjectEvent& e);
 static void AssetCuratorEventHandler(const plAssetCuratorEvent& e);
 
 static constexpr plStringView s_sAudioTriggerMapFile = ":project/RuntimeConfigs/AudioTriggerMap.ddl"_plsv;
+
+/// The package's icon folder: the icons under their ids (":/AssetIcons/Sound_Bank.svg" is
+/// "EditorIcons/AssetIcons/Sound_Bank.svg"). The plugin binary lives in <package>/Bin/<configuration>.
+static plString s_sIconFolder;
+
+static void RegisterIconFolder()
+{
+  plStringBuilder sPlugin, sCopy;
+  plPlugin::GetPluginPaths("plEditorPluginFmod", sPlugin, sCopy, 0);
+
+  plStringBuilder sFolder = sPlugin.GetFileDirectory();
+  sFolder.AppendPath("..", "..", "EditorIcons");
+  sFolder.MakeCleanPath();
+
+  s_sIconFolder = sFolder;
+  plEditorUi::AddIconFolder(s_sIconFolder);
+}
+
+static void UnregisterIconFolder()
+{
+  plEditorUi::RemoveIconFolder(s_sIconFolder);
+  s_sIconFolder.Clear();
+}
 
 static bool IsSoundEventSubAsset(const plSubAsset& subAsset)
 {
@@ -239,6 +265,8 @@ static void UpdateAudioSystemBankEnum()
 
 void OnLoadPlugin()
 {
+  RegisterIconFolder();
+
   plToolsProject::GetSingleton()->s_Events.AddEventHandler(ToolsProjectEventHandler);
   plAssetCurator::GetSingleton()->m_Events.AddEventHandler(AssetCuratorEventHandler);
 
@@ -256,7 +284,25 @@ void OnLoadPlugin()
     {
       const char* szToolBar = "SoundBankAssetToolBar";
       plActionMapManager::RegisterActionMap(szToolBar).IgnoreResult();
+      plDocumentActions::MapToolbarActions(szToolBar);
+      plCommandHistoryActions::MapActions(szToolBar, "");
     }
+  }
+
+  // Sound Event: the window sets these maps, so they must exist before one opens
+  {
+    const char* szMenuBar = "SoundEventAssetMenuBar";
+    plActionMapManager::RegisterActionMap(szMenuBar).IgnoreResult();
+    plStandardMenus::MapActions(szMenuBar, plStandardMenuTypes::Default | plStandardMenuTypes::Edit);
+    plProjectActions::MapActions(szMenuBar);
+    plDocumentActions::MapMenuActions(szMenuBar);
+    plAssetActions::MapMenuActions(szMenuBar);
+    plCommandHistoryActions::MapActions(szMenuBar);
+
+    const char* szToolBar = "SoundEventAssetToolBar";
+    plActionMapManager::RegisterActionMap(szToolBar).IgnoreResult();
+    plDocumentActions::MapToolbarActions(szToolBar);
+    plCommandHistoryActions::MapActions(szToolBar, "");
   }
 
   // Scene
@@ -266,14 +312,24 @@ void OnLoadPlugin()
       plFmodActions::RegisterActions();
       plFmodActions::MapMenuActions("EditorPluginScene_DocumentMenuBar");
       plFmodActions::MapMenuActions("EditorPluginScene_Scene2MenuBar");
+
+      // Project > Packages > FMOD > FMOD Project Settings
+      plFmodActions::MapPluginMenuActions("EditorPluginScene_DocumentMenuBar");
+      plFmodActions::MapPluginMenuActions("EditorPluginScene_Scene2MenuBar");
+
       plFmodActions::MapToolbarActions("EditorPluginScene_DocumentToolBar");
       plFmodActions::MapToolbarActions("EditorPluginScene_Scene2ToolBar");
     }
   }
+
+  // the sound windows' panels in the engine shell
+  plFmodShellPanels::Register();
 }
 
 void OnUnloadPlugin()
 {
+  UnregisterIconFolder();
+  plFmodShellPanels::Unregister();
   plAssetCurator::GetSingleton()->m_Events.RemoveEventHandler(AssetCuratorEventHandler);
   plFmodActions::UnregisterActions();
   plToolsProject::GetSingleton()->s_Events.RemoveEventHandler(ToolsProjectEventHandler);

@@ -1,7 +1,7 @@
 #include <EditorPluginFmod/EditorPluginFmodPCH.h>
 
 #include <EditorPluginFmod/SoundEventAsset/SoundEventAssetManager.h>
-#include <EditorPluginFmod/SoundEventAsset/SoundEventAssetWindow.moc.h>
+#include <EditorPluginFmod/SoundEventAsset/SoundEventAssetWindow.h>
 
 PL_BEGIN_DYNAMIC_REFLECTED_TYPE(plSoundEventAssetDocumentManager, 1, plRTTIDefaultAllocator<plSoundEventAssetDocumentManager>)
 PL_END_DYNAMIC_REFLECTED_TYPE;
@@ -21,8 +21,6 @@ plSoundEventAssetDocumentManager::plSoundEventAssetDocumentManager()
 
   m_DocTypeDesc.m_sResourceFileExtension = "plBinFmodSoundEvent";
   m_DocTypeDesc.m_AssetDocumentFlags = plAssetDocumentFlags::None;
-
-  plQtImageCache::GetSingleton()->RegisterTypeImage("Sound Event", QPixmap(":/AssetIcons/Sound_Event.svg"));
 }
 
 plSoundEventAssetDocumentManager::~plSoundEventAssetDocumentManager()

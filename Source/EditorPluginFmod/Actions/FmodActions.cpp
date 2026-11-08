@@ -1,7 +1,7 @@
 #include <EditorPluginFmod/EditorPluginFmodPCH.h>
 
 #include <EditorPluginFmod/Actions/FmodActions.h>
-#include <EditorPluginFmod/Dialogs/FmodProjectSettingsDlg.moc.h>
+#include <EditorPluginFmod/Dialogs/FmodProjectSettingsEngineDlg.h>
 #include <EditorPluginFmod/Preferences/FmodPreferences.h>
 #include <GuiFoundation/Action/ActionManager.h>
 
@@ -102,8 +102,7 @@ void plFmodAction::Execute(const plVariant& value)
 {
   if (m_Type == ActionType::ProjectSettings)
   {
-    plQtFmodProjectSettingsDlg dlg(nullptr);
-    dlg.exec();
+    plFmodProjectSettingsEngineDlg::Open();
   }
 
   if (m_Type == ActionType::MuteSound)

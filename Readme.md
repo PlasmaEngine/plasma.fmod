@@ -27,7 +27,7 @@ Package.plPackage        the manifest - identity, compatibility, components
 Fmod.plPluginBundle      legacy descriptor, kept until the engine reads manifests directly
 Source/
   FmodPlugin/            runtime -> plFmodPlugin
-  EditorPluginFmod/      editor  -> plEditorPluginFmod  (Qt: asset editors, settings dialog)
+  EditorPluginFmod/      editor  -> plEditorPluginFmod  (asset editors, settings dialog)
 Configs/                 build rules for building against an installed engine SDK
 Branding/                icon and banner
 ```

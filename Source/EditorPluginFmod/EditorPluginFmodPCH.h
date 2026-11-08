@@ -9,14 +9,11 @@
 #include <EditorPluginFmod/EditorPluginFmodDLL.h>
 
 
-#include <EditorFramework/EditorApp/EditorApp.moc.h>
+#include <EditorFramework/EditorApp/EditorApp.h>
 #include <Foundation/Reflection/Reflection.h>
 #include <Foundation/Strings/StringBuilder.h>
 #include <Foundation/Strings/TranslationLookup.h>
 #include <GuiFoundation/Action/ActionMapManager.h>
-#include <GuiFoundation/PropertyGrid/PropertyGridWidget.moc.h>
-#include <GuiFoundation/UIServices/ImageCache.moc.h>
+#include <GuiFoundation/UIServices/ImageCache.h>
+#include <GuiFoundation/UIServices/UIServices.h>
 #include <ToolsFoundation/Reflection/ToolsReflectionUtils.h>
-
-#include <QLabel>
-#include <QLayout>

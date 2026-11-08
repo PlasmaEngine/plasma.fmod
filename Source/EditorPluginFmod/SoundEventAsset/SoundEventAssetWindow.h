@@ -2,24 +2,16 @@
 
 #include <EditorPluginFmod/SoundEventAsset/SoundEventAsset.h>
 #include <Foundation/Basics.h>
-#include <GuiFoundation/DocumentWindow/DocumentWindow.moc.h>
+#include <GuiFoundation/DocumentWindow/DocumentWindow.h>
 #include <ToolsFoundation/Object/DocumentObjectManager.h>
 
-class QLabel;
-class QScrollArea;
-
-class plSoundEventAssetDocumentWindow : public plQtDocumentWindow
+/// The FMOD Sound Event window: its menu bar and toolbar. Its panel (the status banner and the empty state) comes from
+/// plFmodShellPanels.
+class plSoundEventAssetDocumentWindow : public plDocumentWindow
 {
-  Q_OBJECT
-
 public:
   plSoundEventAssetDocumentWindow(plDocument* pDocument);
   ~plSoundEventAssetDocumentWindow();
-
-  virtual const char* GetGroupName() const { return "SoundEventAsset"; }
-
-private Q_SLOTS:
-
 
 private:
   void UpdatePreview();

@@ -2,7 +2,7 @@
 
 #include <EditorFramework/Assets/AssetCurator.h>
 #include <EditorPluginFmod/SoundBankAsset/SoundBankAssetManager.h>
-#include <EditorPluginFmod/SoundBankAsset/SoundBankAssetWindow.moc.h>
+#include <EditorPluginFmod/SoundBankAsset/SoundBankAssetWindow.h>
 #include <FmodPlugin/FmodIncludes.h>
 #include <Foundation/IO/OSFile.h>
 
@@ -66,8 +66,6 @@ plSoundBankAssetDocumentManager::plSoundBankAssetDocumentManager()
   m_DocTypeDesc.m_sResourceFileExtension = "plBinFmodSoundBank";
   m_DocTypeDesc.m_AssetDocumentFlags = plAssetDocumentFlags::None;
 
-  plQtImageCache::GetSingleton()->RegisterTypeImage("Sound Bank", QPixmap(":/AssetIcons/Sound_Bank.svg"));
-
   m_pFmod = PL_DEFAULT_NEW(plSimpleFmod);
 }
 
@@ -94,7 +92,7 @@ void plSoundBankAssetDocumentManager::FillOutSubAssetList(const plAssetDocumentI
 
     {
       plString sAssetFile = dep;
-      if (!plQtEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
+      if (!plEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
         continue;
 
       plFileStats stat;
@@ -138,7 +136,7 @@ void plSoundBankAssetDocumentManager::FillOutSubAssetList(const plAssetDocumentI
       continue;
 
     plString sAssetFile = dep;
-    if (!plQtEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
+    if (!plEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
       continue;
 
     FMOD::Studio::Bank* pBank = nullptr;

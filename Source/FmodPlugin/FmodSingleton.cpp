@@ -535,6 +535,14 @@ void plFmod::QueueSoundBankDataForDeletion(plDataBuffer* pData)
 {
   PL_LOCK(m_DeletionQueueMutex);
 
+  // FMOD has shut down and released its studio system, so nothing reads the data any more. Banks still loaded then are
+  // unloaded by the resource manager's last sweep at engine shutdown, after this plugin's data is gone.
+  if (m_pData == nullptr)
+  {
+    PL_DEFAULT_DELETE(pData);
+    return;
+  }
+
   m_pData->m_SbDeletionQueue.PushBack(pData);
 }
 

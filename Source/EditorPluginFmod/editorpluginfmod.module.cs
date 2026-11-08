@@ -13,7 +13,8 @@ public class EditorPluginFmodModule : ModuleRules
 
         PlasmaPackageSdk.AddPackagePluginImport(this, context, "Source/FmodPlugin", "plFmodPlugin");
 
-        PlasmaPackageQt.ConfigureQtModule(this, context, "EditorPluginFmodModule", "Source/EditorPluginFmod",
-            "Core", "Gui", "Widgets");
+        // The sound windows' lists and the project settings content are engine-drawn: EditorUi and the retained UI runtime.
+        PlasmaPackageSdk.AddImportLibrary(this, context, "plEditorUi");
+        PlasmaPackageSdk.AddImportLibrary(this, context, "plGameUiPlugin");
     }
 }

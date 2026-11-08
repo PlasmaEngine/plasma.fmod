@@ -45,7 +45,7 @@ plTransformStatus plSoundBankAssetDocument::InternalTransformAsset(plStreamWrite
   /// \todo For platform specific sound banks, adjust the path to point to the correct file
 
   plStringBuilder sAssetFile = pProp->m_sSoundBank;
-  if (!plQtEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
+  if (!plEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAssetFile))
     return plStatus(plFmt("Failed to make sound-bank path absolute: '{0}'", pProp->m_sSoundBank));
 
   plFileReader SoundBankFile;
